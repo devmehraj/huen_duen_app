@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Huen Duen - Family Gifting</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            orange: '#FF7A00',
+                            orangeDark: '#FF5E00',
+                            bg: '#F9FAFB',
+                            surface: '#FFFFFF',
+                            text: '#1C1C1E',
+                            textMuted: '#8E8E93',
+                            green: '#34C759',
+                            red: '#FF3B30'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif']
+                    },
+                    boxShadow: {
+                        'glow-orange': '0 10px 25px -5px rgba(255, 122, 0, 0.4)',
+                        'glow-green': '0 10px 25px -5px rgba(52, 199, 89, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+            background-color: #E5E7EB; /* Desktop background */
+        }
+        
+        /* Desktop Device Shell Wrapper */
+        .device-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+            background-image: radial-gradient(circle at top right, #ffecd2 0%, #fcb69f 100%);
+        }
+
+        .device-mockup {
+            width: 400px;
+            height: 850px;
+            background: #000;
+            border-radius: 50px;
+            padding: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.2) inset;
+            position: relative;
+        }
+
+        .device-screen {
+            width: 100%;
+            height: 100%;
+            background: #F9FAFB;
+            border-radius: 38px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Hide scrollbar for clean UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Mobile Viewport Overrides */
+        @media (max-width: 600px) {
+            .device-wrapper {
+                padding: 0;
+                background: none;
+                align-items: flex-start;
+            }
+            .device-mockup {
+                width: 100vw;
+                height: 100vh;
+                border-radius: 0;
+                padding: 0;
+                box-shadow: none;
+                border: none;
+            }
+            .device-screen {
+                border-radius: 0;
+            }
+            .desktop-info {
+                display: none;
+            }
+        }
+
+        /* Screen Transitions */
+        .app-screen {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .app-screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Avatar Selection Outline */
+        .avatar-option.selected {
+            border-color: #FF7A00;
+            background-color: #FFF3E0;
+        }
+        
+        /* Toast Notification */
+        #toast {
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+            transform: translateY(-100px);
+            opacity: 0;
+        }
+        #toast.show {
+            transform: translateY(20px);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="device-wrapper">
+    
+    <!-- Desktop Presentation Info -->
+    <div class="desktop-info mr-12 max-w-sm text-slate-800">
+        <div class="w-16 h-16 bg-white rounded-2xl shadow-xl flex items-center justify-center mb-6">
+            <i class="fas fa-gift text-3xl text-brand-orange"></i>
+        </div>
+        <h1 class="text-5xl font-heading font-bold mb-4 tracking-tight text-slate-900">Huen Duen</h1>
+        <p class="text-lg opacity-80 mb-6 font-sans">The universal family ledger. Track money given and received during weddings, festivals, and celebrations flawlessly.</p>
+        <div class="flex items-center gap-3 text-sm font-semibold bg-white/50 backdrop-blur-md px-4 py-2 rounded-full inline-flex border border-white/40">
+            <i class="fas fa-mobile-alt"></i> Fully Responsive Native Web App
+        </div>
+    </div>
+
+    <!-- The App Container (Acts as Mockup on Desktop, Fullscreen on Mobile) -->
+    <div class="device-mockup">
+        <div class="device-screen">
+            
+            <!-- Dynamic Island / Top Status Bar Area (Visual only) -->
+            <div class="h-7 w-full flex justify-center absolute top-0 left-0 z-50 pointer-events-none">
+                <div class="w-32 h-6 bg-black rounded-b-3xl"></div>
+            </div>
+
+            <!-- Toast Notification -->
+            <div id="toast" class="absolute top-0 left-4 right-4 z-50 bg-gray-900 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 pointer-events-none">
+                <div class="w-8 h-8 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center shrink-0">
+                    <i class="fas fa-check text-sm"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-sm">Success</h4>
+                    <p id="toast-msg" class="text-xs text-gray-300">Action completed successfully.</p>
+                </div>
+            </div>
+
+            <div id="screen-home" class="app-screen active flex-col h-full w-full bg-brand-bg pt-12 pb-24 overflow-y-auto no-scrollbar relative">
+                
+                <!-- Header -->
+                <div class="px-6 pt-4 pb-2 flex justify-between items-center">
+                    <div>
+                        <p class="text-sm text-brand-textMuted font-medium">Welcome back,</p>
+                        <h2 class="text-2xl font-heading font-bold text-brand-text">My Family</h2>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border-2 border-white shadow-sm flex items-center justify-center">
+                        <img src="https://ui-avatars.com/api/?name=Family&background=FF7A00&color=fff" alt="Profile" class="w-full h-full object-cover">
+                    </div>
+                </div>
+
+                <!-- Main Balance Card (Saalas Orange Gradient Style) -->
+                <div class="px-6 mt-4">
+                    <div class="bg-gradient-to-br from-[#FF8C00] to-[#FF4500] rounded-[32px] p-6 text-white shadow-glow-orange relative overflow-hidden">
+                        <!-- Decorative bg shapes -->
+                        <div class="absolute -right-4 -top-4 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
+                        <div class="absolute -left-8 -bottom-8 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>
+                        
+                        <div class="relative z-10 flex justify-between items-start">
+                            <div>
+                                <p class="text-white/80 text-sm font-medium mb-1">Net Flow (Ledger)</p>
+                                <h1 class="text-4xl font-heading font-bold tracking-tight" id="ui-net-balance">₹0</h1>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center">
+                                <i class="fas fa-wallet text-white"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="relative z-10 mt-8 flex gap-4 pt-4 border-t border-white/20">
+                            <div class="flex-1">
+                                <p class="text-xs text-white/70 mb-1 flex items-center gap-1"><i class="fas fa-arrow-down"></i> Received</p>
+                                <p class="font-bold font-heading text-lg" id="ui-total-received">₹0</p>
+                            </div>
+                            <div class="w-px bg-white/20"></div>
+                            <div class="flex-1">
+                                <p class="text-xs text-white/70 mb-1 flex items-center gap-1"><i class="fas fa-arrow-up"></i> Given</p>
+                                <p class="font-bold font-heading text-lg" id="ui-total-given">₹0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="px-6 mt-6 grid grid-cols-2 gap-4">
+                    <button id="btn-quick-receive" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-3 active:scale-95 transition-transform text-left">
+                        <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-brand-green">
+                            <i class="fas fa-hand-holding-heart"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-sm text-brand-text">Got Gift</p>
+                            <p class="text-[10px] text-gray-400">Record received</p>
+                        </div>
+                    </button>
+                    <button id="btn-quick-send" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-3 active:scale-95 transition-transform text-left">
+                        <div class="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-brand-orange">
+                            <i class="fas fa-paper-plane"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-sm text-brand-text">Gave Gift</p>
+                            <p class="text-[10px] text-gray-400">Record sent</p>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Recent Transactions -->
+                <div class="px-6 mt-8 flex-1">
+                    <div class="flex justify-between items-end mb-4">
+                        <h3 class="font-heading font-bold text-lg text-brand-text">Recent Activity</h3>
+                        <button id="btn-view-all" class="text-xs font-semibold text-brand-orange">View All</button>
+                    </div>
+                    <div id="home-transactions-list" class="space-y-3 pb-6">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <div id="screen-send" class="app-screen flex-col h-full w-full bg-brand-surface pt-12 pb-24 overflow-y-auto no-scrollbar relative">
+                <div class="px-6 pt-4 pb-6 flex items-center gap-4 border-b border-gray-50">
+                    <h2 class="text-2xl font-heading font-bold text-brand-text" id="record-title">Record Flow</h2>
+                </div>
+
+                <div class="p-6 space-y-6">
+                    <!-- Type Toggle -->
+                    <div class="flex bg-gray-100 p-1 rounded-xl">
+                        <button id="toggle-type-given" class="flex-1 py-2 text-sm font-bold rounded-lg bg-white shadow-sm text-brand-text transition-all">Given (-)</button>
+                        <button id="toggle-type-received" class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-500 transition-all">Received (+)</button>
+                    </div>
+
+                    <!-- Select Relative -->
+                    <div>
+                        <div class="flex justify-between items-end mb-3">
+                            <label class="text-sm font-bold text-brand-text">Select Family / Relative</label>
+                            <button id="btn-go-add" class="text-xs text-brand-orange font-bold"><i class="fas fa-plus"></i> New</button>
+                        </div>
+                        
+                        <div class="flex overflow-x-auto gap-4 pb-2 no-scrollbar" id="relative-selector-list">
+                            <!-- Populated by JS -->
+                        </div>
+                        <input type="hidden" id="input-relative-id" value="">
+                    </div>
+
+                    <!-- Amount -->
+                    <div>
+                        <label class="text-sm font-bold text-brand-text block mb-2">Amount / Value</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-heading font-bold text-gray-400 currency-symbol">₹</span>
+                            <input type="number" id="input-amount" placeholder="0" class="w-full bg-gray-50 border border-gray-200 rounded-2xl py-4 pl-10 pr-4 text-2xl font-heading font-bold text-brand-text focus:outline-none focus:border-brand-orange focus:bg-white transition-colors" required>
+                        </div>
+                    </div>
+
+                    <!-- Occasion -->
+                    <div>
+                        <label class="text-sm font-bold text-brand-text block mb-2">Occasion</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button class="occasion-btn bg-gray-50 border border-gray-200 rounded-xl py-2 text-xs font-semibold text-gray-600 active:scale-95" data-occ="Wedding">💍 Wedding</button>
+                            <button class="occasion-btn bg-gray-50 border border-gray-200 rounded-xl py-2 text-xs font-semibold text-gray-600 active:scale-95" data-occ="Festival">🎊 Festival</button>
+                            <button class="occasion-btn bg-brand-orange/10 border border-brand-orange text-brand-orange rounded-xl py-2 text-xs font-semibold active:scale-95" data-occ="New Born">👶 New Born</button>
+                            <button class="occasion-btn bg-gray-50 border border-gray-200 rounded-xl py-2 text-xs font-semibold text-gray-600 active:scale-95" data-occ="Housewarming">🏠 Home</button>
+                            <button class="occasion-btn bg-gray-50 border border-gray-200 rounded-xl py-2 text-xs font-semibold text-gray-600 active:scale-95" data-occ="Blessing">🙏 Blessing</button>
+                            <button class="occasion-btn bg-gray-50 border border-gray-200 rounded-xl py-2 text-xs font-semibold text-gray-600 active:scale-95" data-occ="Other">✨ Other</button>
+                        </div>
+                        <input type="hidden" id="input-occasion" value="New Born">
+                    </div>
+
+                    <!-- Submit -->
+                    <button id="btn-submit-record" class="w-full bg-brand-orange text-white font-bold py-4 rounded-2xl shadow-glow-orange mt-4 active:scale-95 transition-transform">
+                        Save Record
+                    </button>
+                </div>
+            </div>
+
+            <div id="screen-add" class="app-screen flex-col h-full w-full bg-brand-surface pt-12 pb-24 overflow-y-auto no-scrollbar relative">
+                <div class="px-6 pt-4 pb-4 flex items-center gap-4">
+                    <button class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 btn-back-home"><i class="fas fa-arrow-left"></i></button>
+                    <h2 class="text-2xl font-heading font-bold text-brand-text">Add Relative</h2>
+                </div>
+
+                <div class="px-6 py-4 space-y-6">
+                    <div>
+                        <label class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2 block">Family / Person Name</label>
+                        <input type="text" id="input-new-rel-name" placeholder="e.g. Sharma Family" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm font-bold text-brand-text focus:outline-none focus:border-brand-orange">
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2 block">Location / City (Optional)</label>
+                        <input type="text" id="input-new-rel-city" placeholder="e.g. Mumbai" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm font-bold text-brand-text focus:outline-none focus:border-brand-orange">
+                    </div>
+
+                    <!-- Avatar Selection matching Saalas Screenshot -->
+                    <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-sm font-bold text-brand-text">Choose Avatar</span>
+                        </div>
+                        <div class="grid grid-cols-4 gap-4" id="avatar-picker-grid">
+                            <!-- Populated by JS -->
+                        </div>
+                        <input type="hidden" id="input-new-rel-avatar" value="👨‍👩‍👧">
+                    </div>
+
+                    <button id="btn-save-relative" class="w-full bg-brand-text text-white font-bold py-4 rounded-xl shadow-lg mt-8 active:scale-95 transition-transform">
+                        Save Relative
+                    </button>
+                </div>
+            </div>
+
+            <div id="screen-ledger" class="app-screen flex-col h-full w-full bg-brand-bg pt-12 pb-24 overflow-y-auto no-scrollbar relative">
+                <div class="px-6 pt-4 pb-2">
+                    <h2 class="text-2xl font-heading font-bold text-brand-text mb-4">Ledger History</h2>
+                    
+                    <!-- Search -->
+                    <div class="relative mb-4">
+                        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        <input type="text" placeholder="Search family or occasion..." class="w-full bg-white border border-gray-200 rounded-xl py-3 pl-10 pr-4 text-sm font-medium focus:outline-none focus:border-brand-orange shadow-sm">
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="flex gap-2 mb-2 overflow-x-auto no-scrollbar pb-2">
+                        <button class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold bg-brand-text text-white whitespace-nowrap" data-filter="all">All Records</button>
+                        <button class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold bg-white text-gray-600 border border-gray-200 whitespace-nowrap" data-filter="received">Received Only</button>
+                        <button class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold bg-white text-gray-600 border border-gray-200 whitespace-nowrap" data-filter="given">Given Only</button>
+                    </div>
+                </div>
+
+                <div class="px-6 flex-1">
+                    <div id="full-ledger-list" class="space-y-3 pb-6">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <div id="screen-profile" class="app-screen flex-col h-full w-full bg-brand-bg pt-12 pb-24 overflow-y-auto no-scrollbar relative">
+                <div class="px-6 pt-4 pb-6 border-b border-gray-200 bg-white">
+                    <h2 class="text-2xl font-heading font-bold text-brand-text text-center mb-6">Account</h2>
+                    <div class="flex flex-col items-center">
+                        <div class="w-20 h-20 rounded-full bg-brand-orange flex items-center justify-center text-3xl text-white font-bold shadow-glow-orange mb-3">
+                            <i class="fas fa-home"></i>
+                        </div>
+                        <h3 class="text-xl font-bold font-heading text-brand-text">My Family</h3>
+                        <p class="text-sm text-gray-500 font-medium">Joined Jan 2026</p>
+                    </div>
+                </div>
+
+                <div class="p-6 space-y-6">
+                    
+                    <!-- Saalas style Gold Referral Banner -->
+                    <div class="bg-gradient-to-r from-yellow-100 to-yellow-50 border border-yellow-200 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-yellow-400 text-white flex items-center justify-center text-lg shadow-sm">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-brand-text text-sm">Refer & Invite</h4>
+                                <p class="text-xs text-yellow-700 font-medium">Keep sync with relatives</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-yellow-500 text-sm"></i>
+                    </div>
+
+                    <!-- Settings List -->
+                    <div>
+                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 ml-2">Preferences</h4>
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                            
+                            <!-- Currency Selector -->
+                            <div class="p-4 border-b border-gray-50 flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-500"><i class="fas fa-coins text-sm"></i></div>
+                                    <span class="font-bold text-sm text-brand-text">Display Currency</span>
+                                </div>
+                                <select id="select-currency" class="bg-gray-50 border border-gray-200 text-sm font-bold rounded-lg px-2 py-1 focus:outline-none text-brand-text">
+                                    <option value="INR">₹ INR</option>
+                                    <option value="USD">$ USD</option>
+                                    <option value="EUR">€ EUR</option>
+                                </select>
+                            </div>
+
+                            <div class="p-4 border-b border-gray-50 flex items-center justify-between active:bg-gray-50">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-500"><i class="fas fa-bell text-sm"></i></div>
+                                    <span class="font-bold text-sm text-brand-text">Notifications</span>
+                                </div>
+                                <div class="w-10 h-6 bg-brand-orange rounded-full relative">
+                                    <div class="w-4 h-4 bg-white rounded-full absolute right-1 top-1 shadow-sm"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-4 flex items-center justify-between active:bg-gray-50">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-500"><i class="fas fa-download text-sm"></i></div>
+                                    <span class="font-bold text-sm text-brand-text">Export Ledger CSV</span>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="absolute bottom-0 left-0 w-full bg-white/90 backdrop-blur-xl border-t border-gray-200 pb-safe pt-2 px-6 flex justify-between items-center z-40 sm:rounded-b-[38px] pb-6 sm:pb-4 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)]">
+                <button class="nav-btn flex flex-col items-center justify-center w-14 h-12 text-brand-orange" data-target="home">
+                    <i class="fas fa-house text-xl mb-1 transition-transform"></i>
+                    <span class="text-[9px] font-bold">Home</span>
+                </button>
+                <button class="nav-btn flex flex-col items-center justify-center w-14 h-12 text-gray-400 hover:text-gray-600 transition-colors" data-target="send">
+                    <i class="fas fa-paper-plane text-xl mb-1 transition-transform"></i>
+                    <span class="text-[9px] font-bold">Record</span>
+                </button>
+                <div class="relative -top-5">
+                    <button class="nav-btn flex items-center justify-center w-14 h-14 rounded-full bg-brand-text text-white shadow-lg shadow-black/20 transform hover:scale-105 active:scale-95 transition-all" data-target="add">
+                        <i class="fas fa-plus text-xl"></i>
+                    </button>
+                </div>
+                <button class="nav-btn flex flex-col items-center justify-center w-14 h-12 text-gray-400 hover:text-gray-600 transition-colors" data-target="ledger">
+                    <i class="fas fa-receipt text-xl mb-1 transition-transform"></i>
+                    <span class="text-[9px] font-bold">Ledger</span>
+                </button>
+                <button class="nav-btn flex flex-col items-center justify-center w-14 h-12 text-gray-400 hover:text-gray-600 transition-colors" data-target="profile">
+                    <i class="fas fa-user text-xl mb-1 transition-transform"></i>
+                    <span class="text-[9px] font-bold">Profile</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // --- STATE MANAGEMENT ---
+    const AppState = {
+        currency: 'INR',
+        currencySymbols: { 'INR': '₹', 'USD': '$', 'EUR': '€' },
+        exchangeRates: { 'INR': 1, 'USD': 0.012, 'EUR': 0.011 }, // Base INR
+        
+        relatives: [
+            { id: 'r1', name: 'Sharma Family', avatar: '👨‍👩‍👧', city: 'Delhi' },
+            { id: 'r2', name: 'Khan Clan', avatar: '🕌', city: 'Mumbai' },
+            { id: 'r3', name: 'Aunt Sarah', avatar: '👩', city: 'London' },
+            { id: 'r4', name: 'Singh Family', avatar: '👳‍♂️', city: 'Punjab' }
+        ],
+        
+        transactions: [
+            { id: 't1', relId: 'r1', type: 'received', amount: 5100, occasion: 'Wedding', date: '2026-06-15' },
+            { id: 't2', relId: 'r2', type: 'given', amount: 2100, occasion: 'Festival', date: '2026-05-10' },
+            { id: 't3', relId: 'r3', type: 'received', amount: 10000, occasion: 'New Born', date: '2026-04-22' },
+            { id: 't4', relId: 'r4', type: 'given', amount: 500, occasion: 'Housewarming', date: '2026-01-05' }
+        ],
+
+        // UI State
+        recordType: 'given', // 'given' or 'received'
+        ledgerFilter: 'all' // 'all', 'received', 'given'
+    };
+
+    const avatarOptions = ['👨‍👩‍👧', '👨‍👩‍👦', '👩', '👨', '👵', '👴', '👶', '🎊', '🕌', '⛪', '🕍', '✨'];
+
+    // --- DOM CACHING ---
+    const screens = document.querySelectorAll('.app-screen');
+    const navBtns = document.querySelectorAll('.nav-btn');
+    
+    // Values
+    const uiNetBalance = document.getElementById('ui-net-balance');
+    const uiTotalReceived = document.getElementById('ui-total-received');
+    const uiTotalGiven = document.getElementById('ui-total-given');
+    const currencySymbolsDOM = document.querySelectorAll('.currency-symbol');
+    
+    // Lists
+    const homeTxList = document.getElementById('home-transactions-list');
+    const fullLedgerList = document.getElementById('full-ledger-list');
+    const relativeSelectorList = document.getElementById('relative-selector-list');
+    const avatarPickerGrid = document.getElementById('avatar-picker-grid');
+
+    // --- HELPER FUNCTIONS ---
+    
+    function switchScreen(targetId) {
+        // Update Screens
+        screens.forEach(screen => {
+            if (screen.id === `screen-${targetId}`) {
+                screen.classList.add('active');
+            } else {
+                screen.classList.remove('active');
+            }
+        });
+
+        // Update Nav Buttons
+        navBtns.forEach(btn => {
+            if (btn.dataset.target === targetId) {
+                if (targetId !== 'add') { // Don't color the main center FAB text orange
+                    btn.classList.remove('text-gray-400');
+                    btn.classList.add('text-brand-orange');
+                    btn.querySelector('i').classList.add('scale-110');
+                }
+            } else {
+                if (btn.dataset.target !== 'add') {
+                    btn.classList.add('text-gray-400');
+                    btn.classList.remove('text-brand-orange');
+                    btn.querySelector('i').classList.remove('scale-110');
+                }
+            }
+        });
+        
+        // Refresh specific screen data
+        if (targetId === 'home') updateDashboard();
+        if (targetId === 'ledger') renderLedger();
+        if (targetId === 'send') renderRelativeSelector();
+    }
+
+    function formatMoney(amountInINR) {
+        const rate = AppState.exchangeRates[AppState.currency];
+        const symbol = AppState.currencySymbols[AppState.currency];
+        const converted = amountInINR * rate;
+        
+        // Format with commas based on currency (Indian style for INR, standard for others)
+        let formattedString;
+        if (AppState.currency === 'INR') {
+             formattedString = converted.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+        } else {
+             formattedString = converted.toLocaleString('en-US', { maximumFractionDigits: 0 });
+        }
+        return `${symbol}${formattedString}`;
+    }
+
+    function getRelativeDetails(id) {
+        return AppState.relatives.find(r => r.id === id) || { name: 'Unknown', avatar: '❓' };
+    }
+
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        document.getElementById('toast-msg').textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // --- RENDER FUNCTIONS ---
+
+    function updateDashboard() {
+        let received = 0;
+        let given = 0;
+
+        AppState.transactions.forEach(tx => {
+            if (tx.type === 'received') received += tx.amount;
+            if (tx.type === 'given') given += tx.amount;
+        });
+
+        const net = received - given;
+
+        uiTotalReceived.textContent = formatMoney(received);
+        uiTotalGiven.textContent = formatMoney(given);
+        uiNetBalance.textContent = formatMoney(net);
+
+        // Update Currency Symbols everywhere
+        currencySymbolsDOM.forEach(el => el.textContent = AppState.currencySymbols[AppState.currency]);
+
+        // Render top 3 recent
+        homeTxList.innerHTML = '';
+        const recent = [...AppState.transactions].reverse().slice(0, 3);
+        
+        if (recent.length === 0) {
+            homeTxList.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">No activity yet</p>`;
+            return;
+        }
+
+        recent.forEach(tx => {
+            const rel = getRelativeDetails(tx.relId);
+            const isReceived = tx.type === 'received';
+            const colorClass = isReceived ? 'text-brand-green' : 'text-brand-text';
+            const sign = isReceived ? '+' : '-';
+            
+            homeTxList.innerHTML += `
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center text-xl">
+                            ${rel.avatar}
+                        </div>
+                        <div>
+                            <p class="font-bold text-sm text-brand-text">${rel.name}</p>
+                            <p class="text-xs text-gray-500">${tx.occasion} • ${tx.date}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold ${colorClass}">${sign}${formatMoney(tx.amount)}</p>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function renderLedger() {
+        fullLedgerList.innerHTML = '';
+        const filtered = AppState.transactions.filter(tx => {
+            if (AppState.ledgerFilter === 'all') return true;
+            return tx.type === AppState.ledgerFilter;
+        }).reverse();
+
+        if (filtered.length === 0) {
+            fullLedgerList.innerHTML = `<p class="text-sm text-gray-400 text-center py-8">No records found</p>`;
+            return;
+        }
+
+        let currentDate = '';
+
+        filtered.forEach(tx => {
+            const rel = getRelativeDetails(tx.relId);
+            const isReceived = tx.type === 'received';
+            const colorClass = isReceived ? 'text-brand-green' : 'text-brand-text';
+            const sign = isReceived ? '+' : '-';
+            const bgIcon = isReceived ? 'bg-green-50 text-green-500' : 'bg-orange-50 text-brand-orange';
+            const icon = isReceived ? 'fa-arrow-down' : 'fa-arrow-up';
+
+            // Add date headers
+            if (tx.date !== currentDate) {
+                fullLedgerList.innerHTML += `<h4 class="text-xs font-bold text-gray-400 mt-4 mb-2 ml-1">${tx.date}</h4>`;
+                currentDate = tx.date;
+            }
+
+            fullLedgerList.innerHTML += `
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full ${bgIcon} flex items-center justify-center">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-sm text-brand-text flex items-center gap-2">
+                                <span>${rel.name}</span>
+                                <span class="text-xs bg-gray-100 px-2 py-0.5 rounded text-gray-500 font-medium">${tx.occasion}</span>
+                            </p>
+                            <p class="text-xs text-gray-400 mt-0.5">Recorded by You</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-heading font-bold text-lg ${colorClass}">${sign}${formatMoney(tx.amount)}</p>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function renderRelativeSelector() {
+        relativeSelectorList.innerHTML = '';
+        
+        AppState.relatives.forEach((rel, index) => {
+            // Select the first one by default if nothing is selected
+            const isSelected = index === 0;
+            if (isSelected) document.getElementById('input-relative-id').value = rel.id;
+            
+            const activeClass = isSelected ? 'border-brand-orange bg-brand-orange/5 shadow-md' : 'border-gray-200 bg-white';
+            
+            const btn = document.createElement('button');
+            btn.className = `flex-shrink-0 w-20 flex flex-col items-center p-3 rounded-2xl border transition-all rel-select-btn ${activeClass}`;
+            btn.onclick = () => selectRelativeForGift(rel.id, btn);
+            btn.innerHTML = `
+                <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-2xl mb-2 shadow-sm">${rel.avatar}</div>
+                <span class="text-[10px] font-bold text-brand-text text-center leading-tight truncate w-full">${rel.name}</span>
+            `;
+            relativeSelectorList.appendChild(btn);
+        });
+    }
+
+    function selectRelativeForGift(id, element) {
+        document.getElementById('input-relative-id').value = id;
+        document.querySelectorAll('.rel-select-btn').forEach(btn => {
+            btn.classList.remove('border-brand-orange', 'bg-brand-orange/5', 'shadow-md');
+            btn.classList.add('border-gray-200', 'bg-white');
+        });
+        element.classList.remove('border-gray-200', 'bg-white');
+        element.classList.add('border-brand-orange', 'bg-brand-orange/5', 'shadow-md');
+    }
+
+    function renderAvatarPicker() {
+        avatarPickerGrid.innerHTML = '';
+        avatarOptions.forEach((emoji, index) => {
+            const isSelected = index === 0;
+            const activeClass = isSelected ? 'selected' : 'border-transparent';
+            
+            const btn = document.createElement('button');
+            btn.className = `avatar-option w-12 h-12 rounded-full flex items-center justify-center text-2xl border-2 transition-all mx-auto bg-white shadow-sm ${activeClass}`;
+            btn.onclick = () => {
+                document.getElementById('input-new-rel-avatar').value = emoji;
+                document.querySelectorAll('.avatar-option').forEach(b => b.classList.remove('selected', 'border-brand-orange', 'bg-brand-orange/10'));
+                btn.classList.add('selected', 'border-brand-orange', 'bg-brand-orange/10');
+            };
+            btn.textContent = emoji;
+            avatarPickerGrid.appendChild(btn);
+        });
+    }
+
+    // --- EVENT LISTENERS BINDING ---
+
+    // Bottom Navigation
+    navBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const target = btn.dataset.target;
+            switchScreen(target);
+        });
+    });
+
+    // Quick Action Buttons on Home
+    document.getElementById('btn-quick-receive').addEventListener('click', () => {
+        setRecordType('received');
+        switchScreen('send');
+    });
+    
+    document.getElementById('btn-quick-send').addEventListener('click', () => {
+        setRecordType('given');
+        switchScreen('send');
+    });
+
+    document.getElementById('btn-view-all').addEventListener('click', () => {
+        switchScreen('ledger');
+    });
+
+    document.getElementById('btn-go-add').addEventListener('click', () => {
+        switchScreen('add');
+    });
+
+    document.querySelectorAll('.btn-back-home').forEach(btn => {
+        btn.addEventListener('click', () => switchScreen('home'));
+    });
+
+    // Currency Switcher
+    document.getElementById('select-currency').addEventListener('change', (e) => {
+        AppState.currency = e.target.value;
+        updateDashboard();
+        renderLedger();
+    });
+
+    // Record Screen - Type Toggle
+    const toggleGiven = document.getElementById('toggle-type-given');
+    const toggleReceived = document.getElementById('toggle-type-received');
+    
+    function setRecordType(type) {
+        AppState.recordType = type;
+        if (type === 'given') {
+            toggleGiven.className = "flex-1 py-2 text-sm font-bold rounded-lg bg-white shadow-sm text-brand-text transition-all";
+            toggleReceived.className = "flex-1 py-2 text-sm font-bold rounded-lg text-gray-500 transition-all";
+        } else {
+            toggleReceived.className = "flex-1 py-2 text-sm font-bold rounded-lg bg-white shadow-sm text-brand-text transition-all";
+            toggleGiven.className = "flex-1 py-2 text-sm font-bold rounded-lg text-gray-500 transition-all";
+        }
+    }
+    
+    toggleGiven.addEventListener('click', () => setRecordType('given'));
+    toggleReceived.addEventListener('click', () => setRecordType('received'));
+
+    // Record Screen - Occasion Selection
+    document.querySelectorAll('.occasion-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            // Reset all
+            document.querySelectorAll('.occasion-btn').forEach(b => {
+                b.className = "occasion-btn bg-gray-50 border border-gray-200 rounded-xl py-2 text-xs font-semibold text-gray-600 active:scale-95";
+            });
+            // Activate clicked
+            e.target.className = "occasion-btn bg-brand-orange/10 border border-brand-orange text-brand-orange rounded-xl py-2 text-xs font-semibold active:scale-95";
+            document.getElementById('input-occasion').value = e.target.dataset.occ;
+        });
+    });
+
+    // Record Screen - Submit Gift
+    document.getElementById('btn-submit-record').addEventListener('click', () => {
+        const amountInput = document.getElementById('input-amount').value;
+        const relId = document.getElementById('input-relative-id').value;
+        const occasion = document.getElementById('input-occasion').value;
+        
+        if (!amountInput || amountInput <= 0) {
+            alert("Please enter a valid amount");
+            return;
+        }
+
+        // Convert input amount to INR before saving to master ledger
+        const rate = AppState.exchangeRates[AppState.currency];
+        const amountInINR = parseFloat(amountInput) / rate;
+
+        const newTx = {
+            id: 't' + Date.now(),
+            relId: relId,
+            type: AppState.recordType,
+            amount: amountInINR,
+            occasion: occasion,
+            date: new Date().toISOString().split('T')[0] // YYYY-MM-DD
+        };
+
+        AppState.transactions.push(newTx);
+        document.getElementById('input-amount').value = ''; // Reset form
+        
+        showToast(`Successfully recorded ${AppState.recordType} gift.`);
+        switchScreen('home'); // Send back to home to see updated balance
+    });
+
+    // Add Relative - Submit
+    document.getElementById('btn-save-relative').addEventListener('click', () => {
+        const name = document.getElementById('input-new-rel-name').value;
+        const city = document.getElementById('input-new-rel-city').value;
+        const avatar = document.getElementById('input-new-rel-avatar').value;
+
+        if (!name) {
+            alert("Please enter a name.");
+            return;
+        }
+
+        const newRel = {
+            id: 'r' + Date.now(),
+            name: name,
+            city: city,
+            avatar: avatar
+        };
+
+        AppState.relatives.unshift(newRel); // Add to top
+        
+        document.getElementById('input-new-rel-name').value = '';
+        document.getElementById('input-new-rel-city').value = '';
+        
+        showToast(`${name} added to your network!`);
+        renderRelativeSelector(); // Refresh list
+        switchScreen('send'); // Go to send screen to use it immediately
+    });
+
+    // Ledger Filters
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.filter-btn').forEach(b => {
+                b.className = "filter-btn px-4 py-1.5 rounded-full text-xs font-bold bg-white text-gray-600 border border-gray-200 whitespace-nowrap";
+            });
+            e.target.className = "filter-btn px-4 py-1.5 rounded-full text-xs font-bold bg-brand-text text-white whitespace-nowrap";
+            
+            AppState.ledgerFilter = e.target.dataset.filter;
+            renderLedger();
+        });
+    });
+
+    // --- INITIALIZATION ---
+    renderAvatarPicker();
+    updateDashboard();
+    
+});
+</script>
+
+</body>
+</html>
