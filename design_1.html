@@ -411,6 +411,19 @@
                         <input type="text" id="input-new-rel-city" placeholder="e.g. Mumbai" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm font-bold text-brand-text focus:outline-none focus:border-brand-orange">
                     </div>
 
+                    <!-- Relation Selection -->
+                    <div>
+                        <label class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2 block">Relationship</label>
+                        <div class="flex overflow-x-auto gap-2 pb-2 no-scrollbar" id="relation-selector">
+                            <button class="relation-btn bg-brand-orange/10 border border-brand-orange text-brand-orange px-4 py-2 rounded-xl text-xs font-semibold active:scale-95 whitespace-nowrap" data-rel="Extended Family">Family</button>
+                            <button class="relation-btn bg-gray-50 border border-gray-200 text-gray-600 px-4 py-2 rounded-xl text-xs font-semibold active:scale-95 whitespace-nowrap" data-rel="In-laws">In-laws</button>
+                            <button class="relation-btn bg-gray-50 border border-gray-200 text-gray-600 px-4 py-2 rounded-xl text-xs font-semibold active:scale-95 whitespace-nowrap" data-rel="Sibling">Sibling</button>
+                            <button class="relation-btn bg-gray-50 border border-gray-200 text-gray-600 px-4 py-2 rounded-xl text-xs font-semibold active:scale-95 whitespace-nowrap" data-rel="Friend">Friend</button>
+                            <button class="relation-btn bg-gray-50 border border-gray-200 text-gray-600 px-4 py-2 rounded-xl text-xs font-semibold active:scale-95 whitespace-nowrap" data-rel="Colleague">Colleague</button>
+                        </div>
+                        <input type="hidden" id="input-new-rel-relation" value="Extended Family">
+                    </div>
+
                     <!-- Avatar Selection -->
                     <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100">
                         <div class="flex justify-between items-center mb-4">
@@ -638,10 +651,10 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         relatives: [
-            { id: 'r1', name: 'Sharma Family', avatar: '👨‍👩‍👧', city: 'Delhi' },
-            { id: 'r2', name: 'Khan Clan', avatar: '🕌', city: 'Mumbai' },
-            { id: 'r3', name: 'Aunt Sarah', avatar: '👩', city: 'London' },
-            { id: 'r4', name: 'Singh Family', avatar: '👳‍♂️', city: 'Punjab' }
+            { id: 'r1', name: 'Sharma Family', avatar: '👨‍👩‍👧', city: 'Delhi', relation: 'Extended Family' },
+            { id: 'r2', name: 'Khan Clan', avatar: '🕌', city: 'Mumbai', relation: 'In-laws' },
+            { id: 'r3', name: 'Aunt Sarah', avatar: '👩', city: 'London', relation: 'Extended Family' },
+            { id: 'r4', name: 'Singh Family', avatar: '👳‍♂️', city: 'Punjab', relation: 'Sibling' }
         ],
         
         transactions: [
@@ -877,7 +890,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderRelativeDetails(relId) {
         const rel = getRelativeDetails(relId);
         document.getElementById('rel-detail-name').textContent = rel.name;
-        document.getElementById('rel-detail-city').textContent = rel.city || 'No Location';
+        document.getElementById('rel-detail-city').textContent = (rel.city || 'No Location') + (rel.relation ? ` • ${rel.relation}` : '');
         document.getElementById('rel-detail-avatar').textContent = rel.avatar;
 
         const relTxs = AppState.transactions.filter(tx => tx.relId === relId).reverse();
@@ -1131,6 +1144,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Add Relative Screen - Relation Selection
+    document.querySelectorAll('.relation-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.relation-btn').forEach(b => {
+                b.className = "relation-btn bg-gray-50 border border-gray-200 text-gray-600 px-4 py-2 rounded-xl text-xs font-semibold active:scale-95 whitespace-nowrap";
+            });
+            e.target.className = "relation-btn bg-brand-orange/10 border border-brand-orange text-brand-orange px-4 py-2 rounded-xl text-xs font-semibold active:scale-95 whitespace-nowrap";
+            document.getElementById('input-new-rel-relation').value = e.target.dataset.rel;
+        });
+    });
+
     // Record Screen - Submit Gift
     document.getElementById('btn-submit-record').addEventListener('click', () => {
         const amountInput = document.getElementById('input-amount').value;
@@ -1171,6 +1195,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = document.getElementById('input-new-rel-name').value;
         const city = document.getElementById('input-new-rel-city').value;
         const avatar = document.getElementById('input-new-rel-avatar').value;
+        const relation = document.getElementById('input-new-rel-relation').value;
 
         if (!name) {
             showToast("Please enter a name.", "error");
@@ -1181,7 +1206,8 @@ document.addEventListener('DOMContentLoaded', () => {
             id: 'r' + Date.now(),
             name: name,
             city: city,
-            avatar: avatar
+            avatar: avatar,
+            relation: relation
         };
 
         AppState.relatives.unshift(newRel);
